@@ -255,38 +255,30 @@ export default function App() {
     } catch {}
   }, [page, mode, index, order, answer, typed, checked, results]);
 
-  async function auth(e) {
-    e.preventDefault();
-    setMessage("");
-    setBusy(true);
+ function auth(e) {
+  e.preventDefault();
+  setMessage("");
 
-    try {
-      const r = await fetch(`${API}/api/${authMode}`, {
-        method: "POST",
-        headers: headers(),
-        body: JSON.stringify({ username, password }),
-      });
+  const cleanUsername = username.trim().toLowerCase();
+  const correctPassword =
+    cleanUsername === "aida" ? "dancemonkey" : "kakashka";
 
-      const data = await r.json();
-
-      if (!r.ok) throw new Error(data.message || "Ошибка авторизации");
-
-      localStorage.setItem("lt_token", data.token);
-      localStorage.setItem("lt_user", JSON.stringify(data.user));
-
-      setToken(data.token);
-      setUser(data.user);
-      setPassword("");
-      setMessage("");
-
-      await loadProgress(data.token);
-      setPage("home");
-    } catch (err) {
-      setMessage(err.message || "Сервер недоступен");
-    } finally {
-      setBusy(false);
-    }
+  if (password !== correctPassword) {
+    setMessage("Неверный логин или пароль");
+    return;
   }
+
+  const localUser = { username: cleanUsername };
+
+  localStorage.setItem("lt_user", JSON.stringify(localUser));
+  localStorage.setItem("lt_token", "local-login");
+
+  setUser(localUser);
+  setToken("local-login");
+  setPassword("");
+  setMessage("");
+  setPage("home");
+}
 
   function logout() {
     localStorage.removeItem("lt_token");
